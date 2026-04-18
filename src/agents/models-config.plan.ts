@@ -7,6 +7,7 @@ import {
 } from "./models-config.merge.js";
 import { resolveImplicitProviders } from "./models-config.providers.implicit.js";
 import { normalizeProviders } from "./models-config.providers.normalize.js";
+import { rewriteOpenRouterProviderBaseUrls } from "./models-config.providers.openrouter-baseurl.js";
 import { applyNativeStreamingUsageCompat } from "./models-config.providers.policy.js";
 import type { ProviderConfig } from "./models-config.providers.secrets.js";
 import { enforceSourceManagedProviderSecrets } from "./models-config.providers.source-managed.js";
@@ -111,13 +112,15 @@ export async function planOpenClawModelsJson(params: {
       sourceSecretDefaults: params.sourceConfigForSecrets?.secrets?.defaults,
       secretRefManagedProviders,
     }) ?? providers;
-  const mergedProviders = resolveProvidersForMode({
-    mode,
-    existingParsed: params.existingParsed,
-    providers: normalizedProviders,
-    secretRefManagedProviders,
-    explicitBaseUrlProviders: resolveExplicitBaseUrlProviders(cfg.models),
-  });
+  const mergedProviders = rewriteOpenRouterProviderBaseUrls(
+    resolveProvidersForMode({
+      mode,
+      existingParsed: params.existingParsed,
+      providers: normalizedProviders,
+      secretRefManagedProviders,
+      explicitBaseUrlProviders: resolveExplicitBaseUrlProviders(cfg.models),
+    }),
+  );
   const secretEnforcedProviders =
     enforceSourceManagedProviderSecrets({
       providers: mergedProviders,
